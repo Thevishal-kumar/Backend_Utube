@@ -125,25 +125,25 @@ const deleteTweet = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Tweet Id is required to delete tweet")
         }
 
-        if (!((tweet?.owner).equals(req.user?._id))) {
-            throw new ApiError(400, "You cannot delete this tweet")
-        }
-
         const tweet = await Tweet.findById(tweetId)
 
         if (!tweet) {
             throw new ApiError(400, "tweet not exist")
         }
 
-        const deleteTweet = await Tweet.findByIdAndDelete(tweet._id)
+        if (!((tweet?.owner).equals(req.user?._id))) {
+            throw new ApiError(400, "You cannot delete this tweet")
+        }
 
-        if (!deleteTweet) {
+        const deletedTweet = await Tweet.findByIdAndDelete(tweet._id)
+
+        if (!deletedTweet) {
             throw new ApiError(400, "Error While Deleting the data")
         }
 
         return res
             .status(200)
-            .json(200, {}, "Tweet deleted successfully")
+            .json(new ApiResponse(200, {}, "Tweet deleted successfully"))
     } catch (error) {
         throw new ApiError(400, error?.message || "Error in deleting tweet")
     }

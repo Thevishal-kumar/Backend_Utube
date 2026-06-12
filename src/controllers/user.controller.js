@@ -106,7 +106,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
 
-    const loggedInUser = await User.findById(user._id).select("-passwrod -refreshToken")
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
     const options = {
         httpOnly: true,
@@ -205,7 +205,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body
 
-    const user = User.findById(req.user._id)
+    const user = await User.findById(req.user._id)
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
     if (!isPasswordCorrect) {
@@ -334,14 +334,14 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 })
 
 
-const getUserChannelProfile = asyncHandler((req, res) => {
+const getUserChannelProfile = asyncHandler(async (req, res) => {
     const { username } = req.params
 
     if (!username?.trim()) {
         throw new ApiError(400, "username is missing")
     }
 
-    const channel = User.aggregate([
+    const channel = await User.aggregate([
         {
             $match: {
                 username: username?.toLowerCase()
@@ -447,8 +447,7 @@ const getWatchedHistory = asyncHandler(async (req, res) => {
         }
     ])
 
-    return
-    res.status(200)
+    return res.status(200)
 
         .json(
             new ApiResponse(200, user[0].watchedHistory,

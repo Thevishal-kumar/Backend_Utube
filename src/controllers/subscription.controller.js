@@ -36,11 +36,8 @@ const toggleSubscription = asyncHandler(async (req, res) => {
                 .json(new ApiResponse(200, subscribed, "Channel subscribed successfully"))
         }
 
-        const unSubscribed = await Subscription.findByIdAndDelete({
-            subscriber: req.user?._id,
-            channel: channelId
-        })
-        if (!unSub) {
+        const unSubscribed = await Subscription.findByIdAndDelete(findSub._id)
+        if (!unSubscribed) {
             throw new ApiError(
                 400,
                 "Error while unsubbing"
@@ -50,8 +47,8 @@ const toggleSubscription = asyncHandler(async (req, res) => {
             .status(204)
             .json(
                 new ApiResponse(
-                    200,
-                    unSub,
+                    204,
+                    unSubscribed,
                     "UnSubed from Channel"
                 )
             )
@@ -111,7 +108,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
   try {
       const { subscriberId } = req.params
   
-      if(!isValidObjectId){
+      if(!isValidObjectId(subscriberId)){
           throw new ApiError(400,"no such channel exits")
       }
   

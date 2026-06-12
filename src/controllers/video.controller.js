@@ -99,7 +99,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Error in thumbnail uploading!!")
         }
 
-        const saved = await User.create({
+        const saved = await Video.create({
             title: title,
             description: description,
             thumbnail: thumbnail?.url,
@@ -172,7 +172,7 @@ const updateVideo = asyncHandler(async (req, res) => {
             throw new ApiError(400, "old thumbnail not deleted")
         }
 
-        const newThumbnailLocalPath = req.files?.thumbnail[0]?.path
+        const newThumbnailLocalPath = req.file?.path
 
         if (!newThumbnailLocalPath) {
             throw new ApiError(400, "thumnail path not found!!")
@@ -186,7 +186,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 
         const videoUpdate = await Video.findByIdAndUpdate(videoId, {
             $set: {
-                titile: title,
+                title: title,
                 description: description,
                 thumbnail: newThumbnail?.url
             }
@@ -196,7 +196,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 
         return res
             .status(200)
-            .josn(new ApiResponse(200, { videoUpdate }, "Video Details update successfully"))
+            .json(new ApiResponse(200, { videoUpdate }, "Video Details update successfully"))
 
 
     } catch (error) {
@@ -230,15 +230,15 @@ const deleteVideo = asyncHandler(async (req, res) => {
             throw new ApiError(400,"Not able to delete thumbnail file")
         }
 
-        const deleteVideo = await Video.findByIdAndDelete(videoId)
+        const deletedVideo = await Video.findByIdAndDelete(videoId)
 
-        if (!deleteVideo) {
+        if (!deletedVideo) {
             throw new ApiError(400, "Video not deleted")
         }
 
         return res
             .status(200)
-            .json(200, new ApiResponse(200, { deleteVideo }, "Video deleted successfully"))
+            .json(new ApiResponse(200, { deletedVideo }, "Video deleted successfully"))
 
     } catch (error) {
         throw new ApiError(400, error?.message || "Error while deleting video")

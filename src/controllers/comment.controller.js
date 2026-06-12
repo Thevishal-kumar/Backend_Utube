@@ -3,7 +3,7 @@ import { Comment } from "../models/comment.models.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { Video } from "../models/video.model.js"
+import { Video } from "../models/video.models.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
    
@@ -11,7 +11,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
          const { videoId } = req.params
          const { page = 1, limit = 10 } = req.query
          if (!videoId) {
-             throw new ApiError(400, "No vedio Found wiht this id")
+             throw new ApiError(400, "No video found with this ID")
          }
          if (!mongoose.Types.ObjectId.isValid(videoId)) {
              throw new ApiError(400, "Invalid video ID format");
@@ -94,8 +94,8 @@ const addComment = asyncHandler(async (req, res) => {
 
         const videoComment = await Comment.create({
             content,
-            videoComment: video._Id,
-            commentBy: req.user?._id
+            video: video._id,
+            owner: req.user?._id
         })
 
         if (!videoComment) {
@@ -120,7 +120,7 @@ const updateComment = asyncHandler(async (req, res) => {
         if (!content) {
             throw new ApiError(400, "Please write comment")
         }
-        const comment = await Comment.findById(req.params?.commenId)
+        const comment = await Comment.findById(req.params?.commentId)
 
         if (!comment) {
             throw new ApiError(400, "comment doesn't exist")
@@ -151,7 +151,13 @@ const updateComment = asyncHandler(async (req, res) => {
 
 const deleteComment = asyncHandler(async (req, res) => {
     try {
-        const comment = await Comment.findByIdAndDelete(req.params?.commenId)
+        const { commentId } = req.params
+
+        if (!commentId) {
+            throw new ApiError(400, "Please give comment Id")
+        }
+
+        const comment = await Comment.findById(commentId)
 
         if (!comment) {
             throw new ApiError(400, "No such comment found")
@@ -164,17 +170,17 @@ const deleteComment = asyncHandler(async (req, res) => {
             )
         }
         const deletedComment = await Comment.findByIdAndDelete(comment._id)
-        if (!deleteComment) {
+        if (!deletedComment) {
             throw new ApiError(
                 400,
-                "Error While deleting from database"
+                "Error while deleting from database"
             )
         }
         return res
             .status(200)
-            .json(new ApiResponse(200, commentDelete, "comment deleted successfully"))
+            .json(new ApiResponse(200, deletedComment, "comment deleted successfully"))
     } catch (error) {
-        throw new ApiError(400, error?.message || "Soemthing went wrong in deleting the comment")
+        throw new ApiError(400, error?.message || "Something went wrong in deleting the comment")
     }
 })
 

@@ -16,7 +16,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
         const playlist = await PlayList.create({
             name,
             description,
-            onwer: req.user?._id
+            owner: req.user?._id
         })
 
         if (!playlist) {
@@ -150,7 +150,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                 "Invalid PlaylistId"
             )
         }
-        const findedPlaylist = await Playlist.aggregate([
+        const findedPlaylist = await PlayList.aggregate([
             {
                 $match: {
                     _id: new mongoose.Types.ObjectId(playlistId)
@@ -331,7 +331,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Invalid video id or playlist id")
         }
 
-        const playList = await Playlist.findById(playlistId)
+        const playList = await PlayList.findById(playlistId)
         if (!playList) {
             throw new ApiError(
                 400,
@@ -339,7 +339,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
             )
         }
 
-        if (!((playList.owner).euqals(req.user?._id))) {
+        if (!((playList.owner).equals(req.user?._id))) {
             throw new ApiError(400, "You cannot delete video from playlist")
         }
 
@@ -356,7 +356,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
                 new: true
             }
         )
-        if (!updatePlaylist) {
+        if (!updatePlaylistVideo) {
             throw new ApiError(
                 500,
                 "Error While removing video from playlist"
@@ -390,7 +390,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Playlist is invalid")
         }
 
-        const findPlaylist = await Playlist.findById(playlistId)
+        const findPlaylist = await PlayList.findById(playlistId)
         if (!findPlaylist) {
             throw new ApiError(
                 400,
@@ -402,15 +402,15 @@ const deletePlaylist = asyncHandler(async (req, res) => {
             throw new ApiError(400, "You owner can delete playlist")
         }
 
-        const deletePlaylist = await PlayList.findByIdAndDelete(findPlaylist._id)
+        const deletedPlaylist = await PlayList.findByIdAndDelete(findPlaylist._id)
 
-        if (!deletePlaylist) {
+        if (!deletedPlaylist) {
             throw new ApiError(500, "Error while deleting vod")
         }
 
         return res
             .status(200)
-            .json(200, deletePlaylist, "Playlist deleted successfully")
+            .json(new ApiResponse(200, deletedPlaylist, "Playlist deleted successfully"))
 
 
     } catch (error) {
@@ -433,7 +433,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Invalid playlist Id")
         }
 
-        const playlist = await findById(playlistId)
+        const playlist = await PlayList.findById(playlistId)
 
         if (!playlist) {
             throw new ApiError(400, "Playlist not exits")
@@ -445,7 +445,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
                 "You cannot delete it"
             )
         }
-        const updatePlaylist = await PlayList.findByIdAndUpdate(playlist._id,
+        const updatedPlaylist = await PlayList.findByIdAndUpdate(playlist._id,
             {
                 $set: {
                     name,
@@ -457,13 +457,13 @@ const updatePlaylist = asyncHandler(async (req, res) => {
             }
         )
 
-        if (!updatePlaylist) {
+        if (!updatedPlaylist) {
             throw new ApiError(400, "Error during playlisy updatation")
         }
 
         return res
             .status(200)
-            .json(new ApiResponse(200, updatePlaylist, "Playlist update successfully"))
+            .json(new ApiResponse(200, updatedPlaylist, "Playlist update successfully"))
 
     } catch (error) {
         throw new ApiError(400, "Something error occur while updating playlist")

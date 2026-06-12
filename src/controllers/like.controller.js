@@ -68,12 +68,12 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Comment id is not found")
         }
 
-        const commentLike = await Like.findOne({ $and: [{ comment: commentId }, { commentBy: req.user?._id }] })
+        const commentLike = await Like.findOne({ $and: [{ comment: commentId }, { likedBy: req.user?._id }] })
 
         if (!commentLike) {
             const commentLiked = await Like.create({
                 comment: commentId,
-                commentLikedBy: req.user?._id
+                likedBy: req.user?._id
             })
 
             if (!commentLiked) {
@@ -113,12 +113,12 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
             throw new ApiError(400, "tweet id is required")
         }
 
-        const tweetLike = await findOne({ $and: [{ tweet: tweetId }, { tweetLikeBy: req.user._id }] })
+        const tweetLike = await Like.findOne({ $and: [{ tweet: tweetId }, { likedBy: req.user?._id }] })
 
         if (!tweetLike) {
             const newTweetLike = await Like.create({
-                tweetLike: tweetId,
-                tweetLikeBy: req.user._id
+                tweet: tweetId,
+                likedBy: req.user?._id
 
             })
 
